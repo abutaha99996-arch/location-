@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>مشاركة الموقع</title>
+  <style>
+    body { font-family: sans-serif; direction: rtl; padding: 1.2rem; }
+    .card { max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 1rem; border-radius: 10px; }
+    button { margin-top: 1rem; padding: .6rem 1rem; font-size: 1rem; }
+    #status { margin-top: .8rem; color: #555; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>مشاركة موقعك</h2>
+    <p>سيُطلب منك إذن الوصول للموقع. يمكنك الرفض أو الموافقة.</p>
+    <label><input type="checkbox" id="consent"> أوافق على مشاركة موقعي.</label>
+    <button id="send">إرسال موقعي</button>
+    <p id="status"></p>
+  </div>
+
+  <script>
+    const btn = document.getElementById("send");
+    const consent = document.getElementById("consent");
+    const status = document.getElementById("status");
+
+    btn.addEventListener("click", () => {
+      if (!consent.checked) {
+        status.textContent = "الرجاء الموافقة أولاً.";
+        return;
+      }
+      if (!("geolocation" in navigator)) {
+        status.textContent = "جهازك لا يدعم تحديد الموقع.";
+        return;
+      }
+
+      status.textContent = "جاري طلب إذن الموقع...";
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const data = {
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            timestamp: pos.timestamp,
+            userAgent: navigator.userAgent,
+          };
+          status.textContent = "يتم إرسال الموقع...";
+          try {
+            const res = await fetch("/api/receive-location", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            });
+            if (res.ok) {
+              status.textContent = "تم إرسال الموقع بنجاح.";
+            } else {
+              status.textContent = "حدث خطأ في الإرسال.";
+            }
+          } catch (e) {
+            status.textContent = "فشل الاتصال بالخادم.";
+          }
+        },
+        (err) => {
+          status.textContent = "لم يتم تحديد الموقع: " + err.message;
+        }
+      );
+    });
+  </script>
+</body>
+</html>
