@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>اختيار الانضمام — روابط / QR</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Arial;direction:rtl;padding:24px;background:#f7f8fb}
+    .card{max-width:720px;margin:20px auto;background:#fff;border-radius:12px;box-shadow:0 6px 24px rgba(20,20,60,0.06);padding:20px}
+    h1{margin:0 0 12px;font-size:20px}
+    p{color:#333;margin:0 0 12px}
+    .consent{display:flex;gap:10px;align-items:center;margin:14px 0}
+    .btn{display:inline-block;padding:10px 16px;border-radius:8px;text-decoration:none;border:0;background:#0b5cff;color:#fff;cursor:pointer}
+    .btn.secondary{background:#6b7280}
+    .options{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .option{flex:1;min-width:180px;border:1px solid #e6e9ef;padding:12px;border-radius:10px;text-align:center}
+    #qrcode{margin:10px auto;width:200px;height:200px}
+    .hint{font-size:13px;color:#666;margin-top:8px}
+    footer{font-size:13px;color:#666;text-align:center;margin-top:18px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>اختر كيف تريد الانضمام</h1>
+    <p>ببساطة فعل الموافقة ثم اختر المكان: واتساب، تلجرام، أو احصل على كود QR لتميّعه على جهازك.</p>
+
+    <label class="consent">
+      <input id="consentCheckbox" type="checkbox" />
+      <span>أوافق على الانتقال إلى الوجهة التي أختارها</span>
+    </label>
+
+    <div id="afterConsent" style="opacity:0.35;pointer-events:none;">
+      <div class="options">
+        <div class="option">
+          <strong>واتساب</strong>
+          <p class="hint">انقر لفتح دعوة واتساب</p>
+          <button class="btn" id="whatsappBtn">فتح واتساب</button>
+        </div>
+
+        <div class="option">
+          <strong>تلجرام</strong>
+          <p class="hint">انقر لفتح دعوة تلجرام</p>
+          <button class="btn" id="telegramBtn">فتح تلجرام</button>
+        </div>
+
+        <div class="option">
+          <strong>عرض QR</strong>
+          <p class="hint">امسح الكود هاتفياً أو احفظه</p>
+          <button class="btn secondary" id="showQrBtn">عرض QR</button>
+          <div id="qrcode" style="display:none;"></div>
+          <div style="margin-top:8px;">
+            <a id="downloadQr" href="#" download="invite-qr.png" style="display:none">تحميل QR</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>ملاحظة: عدّل المتغيرات داخل الكود (أسفل) لتضع روابط دعوة مجموعتك.</footer>
+  </div>
+
+  <!-- مكتبة صغيرة لإنشاء QR (unpkg CDN). لا تحتاج للتثبيت إن وضعت هذا الملف كما هو -->
+  <script src="https://unpkg.com/qrcode@1.5.1/build/qrcode.min.js"></script>
+
+  <script>
+    // === CONFIG ===
+    // ضع هنا روابط الدعوة الفعلية التي تريد توجيه الزوار إليها:
+    const WHATSAPP_LINK = "https://chat.whatsapp.com/EXAMPLECODE"; // ضع رابط دعوة واتساب هنا
+    const TELEGRAM_LINK  = "https://t.me/+EXAMPLECODE";           // أو https://t.me/username أو رابط دعوة
+    // QR_TARGET هو الرابط أو النص الذي سيُحوّل لباركود QR
+    const QR_TARGET = "https://example.com/alternative"; 
+
+    // === END CONFIG ===
+
+    const consent = document.getElementById("consentCheckbox");
+    const after = document.getElementById("afterConsent");
+    consent.addEventListener("change", () => {
+      if (consent.checked) {
+        after.style.opacity = "1";
+        after.style.pointerEvents = "auto";
+      } else {
+        after.style.opacity = "0.35";
+        after.style.pointerEvents = "none";
+        hideQr();
+      }
+    });
+
+    // أزرار
+    document.getElementById("whatsappBtn").addEventListener("click", () => {
+      // تفتح في نافذة جديدة
+      window.open(WHATSAPP_LINK, "_blank", "noopener");
+    });
+    document.getElementById("telegramBtn").addEventListener("click", () => {
+      window.open(TELEGRAM_LINK, "_blank", "noopener");
+    });
+
+    const showQrBtn = document.getElementById("showQrBtn");
+    const qrcodeDiv = document.getElementById("qrcode");
+    const downloadQr = document.getElementById("downloadQr");
+
+    function hideQr(){
+      qrcodeDiv.style.display = "none";
+      downloadQr.style.display = "none";
+      downloadQr.href = "#";
+    }
+
+    showQrBtn.addEventListener("click", async () => {
+      qrcodeDiv.style.display = "block";
+      // نقوم بإنشاء QR داخل العنصر
+      qrcodeDiv.innerHTML = "";
+      try {
+        await QRCode.toCanvas(document.createElement("canvas"), QR_TARGET); // اختبار
+      } catch(e){
+        // fallback handled below
+      }
+      // نستخدم مكتبة QRCode لتوليد عنصر canvas داخل qrcodeDiv
+      QRCode.toDataURL(QR_TARGET, {margin:2, width:400})
+        .then(url => {
+          const img = document.createElement("img");
+          img.src = url;
+          img.alt = "QR Code";
+          img.style.width = "200px";
+          img.style.height = "200px";
+          img.style.display = "block";
+          img.style.margin = "8px auto 0";
+          qrcodeDiv.innerHTML = "";
+          qrcodeDiv.appendChild(img);
+          downloadQr.href = url;
+          downloadQr.style.display = "inline-block";
+          downloadQr.textContent = "تحميل QR كصورة";
+        })
+        .catch(err => {
+          qrcodeDiv.textContent = "حدث خطأ أثناء إنشاء QR.";
+          console.error(err);
+        });
+    });
+
+    // عند أول تحميل: إخفاء الخيارات حتى الموافقة
+    hideQr();
+  </script>
+</body>
+</html>
